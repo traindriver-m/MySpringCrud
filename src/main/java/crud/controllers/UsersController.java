@@ -7,13 +7,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
-@RequestMapping("/users")
 public class UsersController {
     private final UserService service;
 
@@ -22,21 +20,40 @@ public class UsersController {
         this.service = service;
     }
 
-    @GetMapping("/a")
-    public String index(Model model) {
-        User user1 = new User("Victor", 45);
-        service.add(user1);
-        List<String> messages = new ArrayList<>();
-//        messages.add("Hello!");
-//        messages.add("I'm Spring MVC application");
-        messages.add(user1.getName() + " " + user1.getAge());// проверка
-        model.addAttribute("messages", messages);
-        return "index";
+    @GetMapping("/users")
+    public String findAll(Model model) {
+        List<User> users = service.findAll();
+        model.addAttribute("users", users);
+        return "user-list";
     }
 
-    @GetMapping("/{id}")
-    public String show(@PathVariable("id") int id, Model model) {
-        // получим одного юзера по его id из дао и передадим его на отображение в представление
-        return null;
+    @GetMapping("/user-create")
+    public String createUserForm(User user) {
+        return "user-create";
+    }
+
+    @PostMapping("/user-create")
+    public String createUser(User user) {
+        service.add(user);
+        return "redirect:/users";
+    }
+
+    @GetMapping("user-delete/{id}")
+    public String deleteUser(@PathVariable("id") Long id) {
+        service.delete(id);
+        return "redirect:/users";
+    }
+
+    @GetMapping("/user-update/{id}")
+    public String updateUserForm(@PathVariable("id") Long id, Model model) {
+        User user = service.findById(id);
+        model.addAttribute("user", user);
+        return "/user-update";
+    }
+
+    @PostMapping("/user-update")
+    public String updateUser(User user) {
+        service.update(user);
+        return "redirect:/users";
     }
 }
